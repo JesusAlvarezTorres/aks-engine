@@ -28,6 +28,9 @@ ensureCustomCloudRootCertificates() {
             sed -i "/<volumeMountssl>/d" $KUBE_CONTROLLER_MANAGER_FILE
         fi
     fi
+  
+  # remove the placeholder go sdk log level as it should be set for azure stack cloud only.
+  sed -i "/<gosdkloglevel>/d" $KUBE_CONTROLLER_MANAGER_FILE
 }
 
 ensureCustomCloudSourcesList() {
@@ -123,6 +126,9 @@ ensureAzureStackCertificates() {
       sed -i "/<volumeMountssl>/d" $KUBE_CONTROLLER_MANAGER_FILE
     fi
   fi
+
+  # set the log debug level
+  sed -i "s|<gosdkloglevel>|- name: AZURE_GO_SDK_LOG_LEVEL\n          value: DEGUB|g" $KUBE_CONTROLLER_MANAGER_FILE
 
   # ensureAzureStackCertificates will be retried if the exit code is not 0
   curl $AZURESTACK_RESOURCE_METADATA_ENDPOINT
