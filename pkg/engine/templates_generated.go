@@ -18665,7 +18665,7 @@ ensureAzureStackCertificates() {
   fi
 
   # set the log debug level
-  sed -i "s|<gosdkloglevel>|- name: AZURE_GO_SDK_LOG_LEVEL\n        value: DEBUG|g" $KUBE_CONTROLLER_MANAGER_FILE
+  sed -i "s|<gosdkloglevel>|- name: AZURE_GO_SDK_LOG_LEVEL\n        value: INFO|g" $KUBE_CONTROLLER_MANAGER_FILE
 
   # ensureAzureStackCertificates will be retried if the exit code is not 0
   curl $AZURESTACK_RESOURCE_METADATA_ENDPOINT
