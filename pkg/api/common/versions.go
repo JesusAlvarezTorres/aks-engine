@@ -235,6 +235,7 @@ var AllKubernetesWindowsSupportedVersionsAzureStack = map[string]bool{
 	"1.16.9":  false,
 	"1.16.10": true,
 	"1.16.11": true,
+	"1.16.13": true,
 	"1.17.4":  false,
 	"1.17.5":  false,
 	"1.17.6":  false,
