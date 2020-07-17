@@ -716,7 +716,6 @@ var _ = Describe("Azure Container Cluster using the Kubernetes Orchestrator", fu
 				hyperkubeComponents := []string{
 					common.APIServerComponentName,
 					common.ControllerManagerComponentName,
-					common.KubeProxyAddonName,
 					common.SchedulerComponentName,
 				}
 
