@@ -60,6 +60,15 @@ function renameResultsFile {
   fi
 }
 
+function overwriteApiModelFile {
+  docker run --rm \
+      -v $(pwd):${WORK_DIR} \
+      -w ${WORK_DIR} \
+      -e RESOURCE_GROUP=$RESOURCE_GROUP \
+      ${DEV_IMAGE} \
+      /bin/bash -c "mv _output/$RESOURCE_GROUP/apimodel-upgrade.json _output/$RESOURCE_GROUP/apimodel.json" || exit 1
+}
+
 echo "Running E2E tests against a cluster built with the following API model:"
 cat ${TMP_DIR}/apimodel-input.json
 
@@ -382,12 +391,27 @@ if [ "${UPGRADE_CLUSTER}" = "true" ]; then
       -e MASTER_VM_UPGRADE_SKU=$MASTER_VM_UPGRADE_SKU \
       ${DEV_IMAGE} \
       /bin/bash -c "jq --arg sku \"$MASTER_VM_UPGRADE_SKU\" '. | .properties.masterProfile.vmSize = \$sku' < _output/$RESOURCE_GROUP/apimodel.json > _output/$RESOURCE_GROUP/apimodel-upgrade.json" || exit 1
-  docker run --rm \
+  overwriteApiModelFile
+  if [ ! -z "$UPGRADE_DISTRO"] && [! -n "$UPGRADE_DISTRO"]; then
+    # modify the master distro to test OS upgrade
+    docker run --rm \
       -v $(pwd):${WORK_DIR} \
       -w ${WORK_DIR} \
       -e RESOURCE_GROUP=$RESOURCE_GROUP \
+      -e UPGRADE_DISTRO=$UPGRADE_DISTRO \
       ${DEV_IMAGE} \
-      /bin/bash -c "mv _output/$RESOURCE_GROUP/apimodel-upgrade.json _output/$RESOURCE_GROUP/apimodel.json" || exit 1
+      /bin/bash -c "jq --arg distro \"$UPGRADE_DISTRO\" '. | .properties.masterProfile.distro = \$distro' < _output/$RESOURCE_GROUP/apimodel.json > _output/$RESOURCE_GROUP/apimodel-upgrade.json" || exit 1
+    overwriteApiModelFile
+    # modify the linux node pool(s) distro to test OS upgrade
+    docker run --rm \
+      -v $(pwd):${WORK_DIR} \
+      -w ${WORK_DIR} \
+      -e RESOURCE_GROUP=$RESOURCE_GROUP \
+      -e UPGRADE_DISTRO=$UPGRADE_DISTRO \
+      ${DEV_IMAGE} \
+      /bin/bash -c "jq --arg distro \"$UPGRADE_DISTRO\" '. | .properties.agentPoolProfiles[] |= if .osType == \"Linux\" then .distro = \$distro else . end' < _output/$RESOURCE_GROUP/apimodel.json > _output/$RESOURCE_GROUP/apimodel-upgrade.json" || exit 1
+    overwriteApiModelFile
+  fi
   for ver_target in $UPGRADE_VERSIONS; do
     docker run --rm \
       -v $(pwd):${WORK_DIR} \
