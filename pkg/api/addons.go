@@ -581,7 +581,7 @@ func (cs *ContainerService) setAddonsConfig(isUpgrade bool) {
 
 	defaultAzureFileCSIDriverAddonsConfig := KubernetesAddon{
 		Name:    common.AzureFileCSIDriverAddonName,
-		Enabled: to.BoolPtr(DefaultAzureFileCSIDriverAddonEnabled && cs.Properties.ShouldEnableAzureCloudAddon(common.AzureFileCSIDriverAddonName)),
+		Enabled: to.BoolPtr(DefaultAzureFileCSIDriverAddonEnabled && cs.Properties.ShouldEnableAzureCloudAddon(common.AzureFileCSIDriverAddonName) && !cs.Properties.IsAzureStackCloud()),
 		Containers: []KubernetesContainerSpec{
 			{
 				Name:           common.CSIProvisionerContainerName,
